@@ -10,11 +10,6 @@ namespace FFR_Test
     [TestClass]
     public class UnitTest1
     {
-        static void Main(string[] args)
-        {
-        }
-
-
         [TestMethod]
         public void AddCustomerandSaleHeader()
         {
@@ -94,5 +89,46 @@ namespace FFR_Test
             updateSalesHeader.SalesStatus = "Record has been updated!";
             ffrDb.SaveChanges();
         }
+        [TestMethod]
+        public void InsertUsingRepository()
+        {
+            var contactRepo = new DataRepository<Customer>();
+
+            Customer insertCustomer = new Customer();
+            insertCustomer.FirstName = "Jackie";
+            insertCustomer.LastName = "Olsen";
+            insertCustomer.Address = "11320 Lovage Way";
+            insertCustomer.City = "Parker";
+            insertCustomer.State = "CO";
+            insertCustomer.Zip = "80134";
+            insertCustomer.Phone = "303-949-2695";
+            insertCustomer.Email = "jolsen@hotmail.com";
+
+            contactRepo.Insert(insertCustomer);
+        }
+
+        [TestMethod]
+        public void InsertPhoneUsingRepository()
+        {
+            var phoneRepo = new DataRepository<Phone>();
+
+            Phone myphone = new Phone();
+            myphone.ContactID = 1;
+            myphone.PhoneNumber = "888-8888";
+            myphone.PhoneType = 1;
+
+            phoneRepo.Insert(myphone);
+        }
+
+
+        [TestMethod]
+        public void RetrieveUsingRepository()
+        {
+            var contactRepo = new DataRepository<Contact>();
+
+            List<Contact> myList = contactRepo.GetAll().ToList<Contact>();
+            Assert.IsTrue(myList.Count > 0);
+        }
+
     }
 }
