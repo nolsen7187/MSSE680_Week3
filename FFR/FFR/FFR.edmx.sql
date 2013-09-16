@@ -2,12 +2,9 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 09/11/2013 14:05:28
--- Generated from EDMX file: C:\Users\nolsen\Source\Repos\MSSE_Week2\FFR\FFR\FFR.edmx
+-- Date Created: 09/15/2013 22:16:42
+-- Generated from EDMX file: C:\Users\NOLSEN\Source\Repos\MSSE680_Week3\FFR\FFR\FFR.edmx
 -- --------------------------------------------------
-
-
---CREATE DB FFR IF IT HAS NOT BEEN CREATED
 
 IF OBJECT_ID(N'FFR', N'U') IS NULL CREATE DATABASE FFR;
 
@@ -23,24 +20,33 @@ GO
 -- --------------------------------------------------
 
 IF OBJECT_ID(N'[dbo].[FK_SalesHeader_Customer]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[SalesHeader] DROP CONSTRAINT [FK_SalesHeader_Customer];
+    ALTER TABLE [dbo].[SalesHeaders] DROP CONSTRAINT [FK_SalesHeader_Customer];
+GO
+IF OBJECT_ID(N'[dbo].[FK_SalesItems_Items]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[SalesItems] DROP CONSTRAINT [FK_SalesItems_Items];
+GO
+IF OBJECT_ID(N'[dbo].[FK_SalesItems_SalesHeaders]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[SalesItems] DROP CONSTRAINT [FK_SalesItems_SalesHeaders];
 GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
 -- --------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[Customer]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[Customer];
+IF OBJECT_ID(N'[dbo].[Customers]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Customers];
 GO
-IF OBJECT_ID(N'[dbo].[Employee]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[Employee];
+IF OBJECT_ID(N'[dbo].[Employees]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Employees];
 GO
-IF OBJECT_ID(N'[dbo].[Item]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[Item];
+IF OBJECT_ID(N'[dbo].[Items]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Items];
 GO
-IF OBJECT_ID(N'[dbo].[SalesHeader]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[SalesHeader];
+IF OBJECT_ID(N'[dbo].[SalesHeaders]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[SalesHeaders];
+GO
+IF OBJECT_ID(N'[dbo].[SalesItems]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[SalesItems];
 GO
 
 -- --------------------------------------------------
@@ -93,6 +99,17 @@ CREATE TABLE [dbo].[Items] (
 );
 GO
 
+-- Creating table 'SalesItems'
+CREATE TABLE [dbo].[SalesItems] (
+    [SalesId] int  NOT NULL,
+    [ItemId] int  NOT NULL,
+    [Qty] int  NULL,
+    [Price] decimal(19,4)  NULL,
+    [LineAmount] decimal(19,4)  NULL,
+    [ItemName] varchar(50)  NULL
+);
+GO
+
 -- --------------------------------------------------
 -- Creating all PRIMARY KEY constraints
 -- --------------------------------------------------
@@ -121,10 +138,16 @@ ADD CONSTRAINT [PK_Items]
     PRIMARY KEY CLUSTERED ([ItemId] ASC);
 GO
 
+-- Creating primary key on [SalesId] in table 'SalesItems'
+ALTER TABLE [dbo].[SalesItems]
+ADD CONSTRAINT [PK_SalesItems]
+    PRIMARY KEY CLUSTERED ([SalesId] ASC);
+GO
+
 -- --------------------------------------------------
 -- Creating all FOREIGN KEY constraints
 -- --------------------------------------------------
---test again
+
 -- Creating foreign key on [CustomerId] in table 'SalesHeaders'
 ALTER TABLE [dbo].[SalesHeaders]
 ADD CONSTRAINT [FK_SalesHeader_Customer]
@@ -137,6 +160,29 @@ ADD CONSTRAINT [FK_SalesHeader_Customer]
 CREATE INDEX [IX_FK_SalesHeader_Customer]
 ON [dbo].[SalesHeaders]
     ([CustomerId]);
+GO
+
+-- Creating foreign key on [ItemId] in table 'SalesItems'
+ALTER TABLE [dbo].[SalesItems]
+ADD CONSTRAINT [FK_SalesItems_Items]
+    FOREIGN KEY ([ItemId])
+    REFERENCES [dbo].[Items]
+        ([ItemId])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_SalesItems_Items'
+CREATE INDEX [IX_FK_SalesItems_Items]
+ON [dbo].[SalesItems]
+    ([ItemId]);
+GO
+
+-- Creating foreign key on [SalesId] in table 'SalesItems'
+ALTER TABLE [dbo].[SalesItems]
+ADD CONSTRAINT [FK_SalesItems_SalesHeaders]
+    FOREIGN KEY ([SalesId])
+    REFERENCES [dbo].[SalesHeaders]
+        ([SalesId])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
 GO
 
 -- --------------------------------------------------

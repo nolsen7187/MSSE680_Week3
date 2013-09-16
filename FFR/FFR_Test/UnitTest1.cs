@@ -3,14 +3,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
 using System.Linq;
 using FFR;
+using System.Collections.Generic;
+using System.Collections;
 
+using System.Data.Entity;
+using System.Configuration;
 namespace FFR_Test
 {
 
     [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
+        /*[TestMethod]
         public void AddCustomerandSaleHeader()
         {
             FFREntities ffrDb = new FFREntities();
@@ -88,47 +92,118 @@ namespace FFR_Test
             SalesHeader updateSalesHeader = (from d in ffrDb.SalesHeaders where d.SalesId == 2 select d).Single();
             updateSalesHeader.SalesStatus = "Record has been updated!";
             ffrDb.SaveChanges();
+        }*/
+        [TestMethod]
+        public void CreateCustomerUsingRepository()
+        {
+            var customerRepo = new DataRepository<Customer>();
+
+            Customer createCustomer = new Customer();
+            createCustomer.FirstName = "Jackie";
+            createCustomer.LastName = "Olsen";
+            createCustomer.Address = "11320 Lovage Way";
+            createCustomer.City = "Parker";
+            createCustomer.State = "CO";
+            createCustomer.Zip = "80134";
+            createCustomer.Phone = "303-949-2695";
+            createCustomer.Email = "jolsen@hotmail.com";
+
+            customerRepo.Create(createCustomer);
+        }
+        
+        [TestMethod]
+        public void CreateItemUsingRepository()
+        {
+            var itemRepo = new DataRepository<Item>();
+
+            Item createItem = new Item();
+            createItem.ItemName = "FP Green Turbo";
+            createItem.Price = 800;
+            createItem.ItemCost = 350;
+
+            itemRepo.Create(createItem);
         }
         [TestMethod]
-        public void InsertUsingRepository()
+        public void CreateSalesHeaderUsingRepository()
         {
-            var contactRepo = new DataRepository<Customer>();
+            var SalesHeaderRepo = new DataRepository<SalesHeader>();
 
-            Customer insertCustomer = new Customer();
-            insertCustomer.FirstName = "Jackie";
-            insertCustomer.LastName = "Olsen";
-            insertCustomer.Address = "11320 Lovage Way";
-            insertCustomer.City = "Parker";
-            insertCustomer.State = "CO";
-            insertCustomer.Zip = "80134";
-            insertCustomer.Phone = "303-949-2695";
-            insertCustomer.Email = "jolsen@hotmail.com";
+            SalesHeader createSalesHeader = new SalesHeader();
+            createSalesHeader.CustomerId = 0;
+            createSalesHeader.OrderSalesBalance = 800;
+            createSalesHeader.OrderTaxAmount = 100;
+            createSalesHeader.OrderTotal = 900;
 
-            contactRepo.Insert(insertCustomer);
+            SalesHeaderRepo.Create(createSalesHeader);
         }
-
         [TestMethod]
-        public void InsertPhoneUsingRepository()
+        public void CreateSalesItemUsingRepository()
         {
-            var phoneRepo = new DataRepository<Phone>();
+            var SalesItemRepo = new DataRepository<SalesItem>();
 
-            Phone myphone = new Phone();
-            myphone.ContactID = 1;
-            myphone.PhoneNumber = "888-8888";
-            myphone.PhoneType = 1;
+            SalesItem createSalesItem = new SalesItem();
+            createSalesItem.ItemId = 0;
+            createSalesItem.ItemName = "FP Green Turbo";
+            createSalesItem.Price = 800;
+            createSalesItem.Qty = 1;
+            createSalesItem.LineAmount = 800;
 
-            phoneRepo.Insert(myphone);
-        }
-
-
+            SalesItemRepo.Create(createSalesItem);
+        } 
+        //Build list of customers from customer table in the FFR databse and provide a true value if list is greater than zero.
         [TestMethod]
         public void RetrieveUsingRepository()
         {
-            var contactRepo = new DataRepository<Contact>();
+            var customerRepo = new DataRepository<Customer>();
 
-            List<Contact> myList = contactRepo.GetAll().ToList<Contact>();
-            Assert.IsTrue(myList.Count > 0);
+            List<Customer> customerList = customerRepo.GetAll().ToList<Customer>();
+            Assert.IsTrue(customerList.Count > 0);
         }
+        //Update an Item in the FFR db Context
+        [TestMethod]
+        public void UpdateItemUsingRepository()
+        {
+            var itemRepo = new DataRepository<Item>();
 
+            Item updateItem = new Item();
+            updateItem.ItemId = 0;
+            updateItem.Price = 1000;
+            updateItem.ItemCost = 450;
+
+            itemRepo.Update(updateItem);
+        }
+        //Update an Item in the FFR db Context
+        [TestMethod]
+        public void DeleteItemUsingRepository()
+        {
+            var itemRepo = new DataRepository<Item>();
+
+
+            Item createItem = new Item();
+            createItem.ItemName = "FP Gray Turbo";
+            createItem.Price = 1200;
+            createItem.ItemCost = 550;
+            createItem.ItemId = 2;
+
+            itemRepo.Create(createItem);
+            itemRepo.Dispose();
+
+            var deleteItemRepo = new DataRepository<Item>();
+            //tried to look up specific record wanting to be deleted by using the getbyspecifickey method
+            //I could grab the query but could not figure out a way to manipulate the query to delete the selected record.
+            //IQueryable Query = deleteItemRepo.GetBySpecificKey("ItemId", 2);
+            //string sqlClause = Query.ToString();
+            //DbContext localContext;
+            //localContext = new DbContext(ConfigurationManager.ConnectionStrings["FFREntities"].ConnectionString);
+            //localContext.Database.ExecuteSqlCommand(String.Format("DELETE {0}", sqlClause));
+            //List<Item> myList = deleteItemRepo.GetBySpecificKey("ItemId", 2);
+
+            Item deleteItem = (from d in deleteItemRepo.GetAll() where d.ItemId == 2 select d).Single();
+            //string sqlClause = Query.ToString();
+            //deleteItemRepo.Delete(Query);
+            //deleteItem.ItemId = 2;
+            deleteItemRepo.Delete(deleteItem);
+            deleteItemRepo.Dispose();
+        }
     }
 }

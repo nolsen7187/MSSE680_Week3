@@ -13,28 +13,19 @@ namespace FFR
     /// <typeparam name="T"></typeparam>
     public class DataRepository<T> : IDataRepository<T>, IDataRepository where T : class
     {
-        /// <summary>
-        /// Data Context object to interact with the db
-        /// </summary>
-        readonly DbContext _dataContext;
 
-        /// <summary>
-        /// Public constructor
-        /// </summary>
+        readonly DbContext _dbContext;
+
+        //Set _dbContext variable to the dbContext based on the FFREntities for this project
         public DataRepository()
         {
-            //instantiate the datacontext by reading the connection string
-            _dataContext = new DbContext(ConfigurationManager.ConnectionStrings["scottEntities"].ConnectionString);
-
+            _dbContext = new DbContext(ConfigurationManager.ConnectionStrings["FFREntities"].ConnectionString);
         }
-        /// <summary>
-        /// Dispose method for the class
-        /// </summary>
         public void Dispose()
         {
-            if (_dataContext != null)
+            if (_dbContext != null)
             {
-                _dataContext.Dispose();
+                _dbContext.Dispose();
             }
         }
 
@@ -49,7 +40,7 @@ namespace FFR
         public virtual IQueryable<T> GetBySpecificKey(string KeyName, int KeyVal)
         {
 
-            var itemParameter = Expression.Parameter(typeof(T), "item");
+            var itemParameter = Expression.Parameter(typeof(T), "ItemId");
             var whereExpression = Expression.Lambda<Func<T, bool>>
                 (
                 Expression.Equal(
@@ -105,68 +96,56 @@ namespace FFR
 
         }
 
-        /// <summary>
-        /// Returns all the records from a table
-        /// </summary>
-        /// <returns>Collection of records</returns>
+        /// Returns all the records from a table based on the dbcontext stored in the _dbContext variable
         public virtual IQueryable<T> GetAll()
         {
-            return _dataContext.Set<T>().AsQueryable();
+            return _dbContext.Set<T>().AsQueryable();
         }
-
-        /// <summary>
-        /// Inserts a record into the database
-        /// </summary>
-        /// <param name="entity">The entity to be inserted</param>
-        public virtual void Insert(T entity)
+        /// Creates a record in db
+        public virtual void Create(T entity)
         {
-            _dataContext.Set<T>().Add(entity);
-            _dataContext.SaveChanges();
-
+            _dbContext.Set<T>().Add(entity);
+            _dbContext.SaveChanges();
         }
 
-        /// <summary>
-        /// Deletes a record from the table
-        /// </summary>
-        /// <param name="entity">Entity to be deleted</param>
+        // Method to Delete a record from a table 
         public virtual void Delete(T entity)
         {
-            var entry = _dataContext.Entry(entity);
+            var entry = _dbContext.Entry(entity);
             if (entry != null)
             {
                 entry.State = System.Data.EntityState.Deleted;
             }
             else
             {
-                _dataContext.Set<T>().Attach(entity);
+                _dbContext.Set<T>().Attach(entity);
             }
-            _dataContext.Entry(entity).State = System.Data.EntityState.Deleted;
-            _dataContext.SaveChanges();
+            _dbContext.Entry(entity).State = System.Data.EntityState.Deleted;
+            _dbContext.SaveChanges();
 
         }
-        /// <summary>
-        /// Updates a record into a table
-        /// </summary>
-        /// <param name="entity"></param>
         public virtual void Update(T entity)
         {
-            _dataContext.Set<T>().Attach(entity);
-            _dataContext.Entry(entity).State = System.Data.EntityState.Modified;
-            _dataContext.SaveChanges();
+            _dbContext.Set<T>().Attach(entity);
+            _dbContext.Entry(entity).State = System.Data.EntityState.Modified;
+            _dbContext.SaveChanges();
         }
-
+        // Interface to fetch all objects in FFR DB that can be queried
         IQueryable IDataRepository.GetAll()
         {
             return GetAll();
         }
-        void IDataRepository.Insert(object entity)
+        //Generic Create
+        void IDataRepository.Create(object entity)
         {
-            Insert((T)entity);
+            Create((T)entity);
         }
+        //Generic Update
         void IDataRepository.Update(object entity)
         {
             Update((T)entity);
         }
+        //Generic Delete
         void IDataRepository.Delete(object entity)
         {
             Delete((T)entity);
@@ -182,33 +161,24 @@ namespace FFR
             return GetBySpecificKey(KeyName, KeyVal);
         }
     }
-
-    /// <summary>
-    /// Generic interface
-    /// </summary>
-    /// <typeparam name="T">Type of entity</typeparam>
+    /// This is a generic inteface extending a class.
     public interface IDataRepository<T> where T : class
     {
         IQueryable<T> GetAll();
-        void Insert(T entity);
+        void Create(T entity);
         void Update(T entity);
         void Delete(T entity);
         IQueryable<T> GetBySpecificKey(string KeyName, string KeyVal);
         IQueryable<T> GetBySpecificKey(string KeyName, int KeyVal);
     }
-    /// <summary>
-    /// Generic interface
-    /// </summary>
+    /// This is a generic interface for any type of object
     public interface IDataRepository
     {
         IQueryable GetAll();
-        void Insert(object entity);
+        void Create(object entity);
         void Update(object entity);
         void Delete(object entity);
         IQueryable GetBySpecificKey(string KeyName, string KeyVal);
         IQueryable GetBySpecificKey(string KeyName, int KeyVal);
     }
 }
-//*********************************************************************************//
-//*************************************END*****************************************//
-//*********************************************************************************//
